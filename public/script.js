@@ -42,7 +42,7 @@ navigator.mediaDevices.getUserMedia({
 })
 
 window.addEventListener("load", function (v) {
-  document.getElementById("join").onclick(function () {
+  document.getElementById("join").addEventListener("click", function () {
     console.log(myPeer);
     if (peerId) {
       setTimeout(() => {
