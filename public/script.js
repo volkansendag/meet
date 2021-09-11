@@ -9,6 +9,7 @@ const myPeer = new Peer(undefined, {
 const myVideo = document.createElement('video')
 myVideo.muted = true
 const peers = {}
+var joined = false;
 
 var peerId;
 var opened = false;
@@ -42,14 +43,18 @@ navigator.mediaDevices.getUserMedia({
 })
 
 window.addEventListener("load", function (v) {
-  document.getElementById("join").addEventListener("click", function () {
-    console.log(myPeer);
-    if (peerId) {
-      setTimeout(() => {
-        socket.emit('join-room', ROOM_ID, peerId);
-      }, 1000);
-    }
-  })
+  var joinButton = document.getElementById("join");
+  if (joinButton) {
+    joinButton.addEventListener("click", function () {
+      if (peerId && !joined) {
+        joined = true;
+        joinButton.style.display = "none";
+        setTimeout(() => {
+          socket.emit('join-room', ROOM_ID, peerId);
+        }, 1000);
+      }
+    })
+  }
 })
 
 socket.on('user-disconnected', userId => {
