@@ -57,10 +57,13 @@ window.addEventListener("load", function (v) {
   }
   if (disconnectButton) {
     disconnectButton.addEventListener("click", function () {
-      joinButton.style.display = "block";
-      disconnectButton.style.display = "none";
-      socket.emit('disconnect-room', ROOM_ID, peerId);
-      removeAllVideos();
+      if (peerId && joined) {
+        joined = false;
+        joinButton.style.display = "block";
+        disconnectButton.style.display = "none";
+        socket.emit('disconnect-room', ROOM_ID, peerId);
+        removeAllVideos();
+      }
     })
   }
 })
