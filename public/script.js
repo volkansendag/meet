@@ -21,12 +21,6 @@ navigator.mediaDevices.getUserMedia({
 }).then(stream => {
   addVideoStream(myVideo, stream).then(function () {
 
-    if (peerId) {
-      setTimeout(() => {
-        socket.emit('join-room', ROOM_ID, peerId);
-      }, 1000);
-    }
-
     myPeer.on('call', call => {
       call.answer(stream)
       if (peers[call.peer] == undefined) {
@@ -47,6 +41,17 @@ navigator.mediaDevices.getUserMedia({
   })
 })
 
+document.onload(function (v) {
+  document.getElementById("join").onclick(function () {
+    console.log(myPeer);
+    if (peerId) {
+      setTimeout(() => {
+        socket.emit('join-room', ROOM_ID, peerId);
+      }, 1000);
+    }
+  })
+})
+
 socket.on('user-disconnected', userId => {
   if (peers[userId]) {
     peers[userId].close()
@@ -55,7 +60,6 @@ socket.on('user-disconnected', userId => {
 
 myPeer.on('open', id => {
   peerId = id;
-  socket.emit('join-room', ROOM_ID, id);
 })
 
 function connectToNewUser(userId, stream) {
