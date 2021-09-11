@@ -22,7 +22,9 @@ navigator.mediaDevices.getUserMedia({
   addVideoStream(myVideo, stream).then(function () {
 
     if (peerId) {
-      socket.emit('join-room', ROOM_ID, peerId);
+      setTimeout(() => {
+        socket.emit('join-room', ROOM_ID, peerId);
+      }, 1000);
     }
 
     myPeer.on('call', call => {
