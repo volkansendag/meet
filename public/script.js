@@ -41,7 +41,7 @@ navigator.mediaDevices.getUserMedia({
   })
 })
 
-document.onload(function (v) {
+document.addEventListener("onload", function (v) {
   document.getElementById("join").onclick(function () {
     console.log(myPeer);
     if (peerId) {
