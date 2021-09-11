@@ -76,7 +76,7 @@ function connectToNewUser(userId, stream) {
     peers[userId].video = document.createElement('video')
 
     peers[userId].on('stream', userVideoStream => {
-      addVideoStream(video, userVideoStream)
+      addVideoStream(peers[userId].video, userVideoStream)
     })
     peers[userId].on('close', () => {
       delete peers[userId];
