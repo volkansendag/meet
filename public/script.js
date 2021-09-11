@@ -44,15 +44,20 @@ navigator.mediaDevices.getUserMedia({
 
 window.addEventListener("load", function (v) {
   var joinButton = document.getElementById("join");
+  var disconnectButton = document.getElementById("disconnect");
   if (joinButton) {
     joinButton.addEventListener("click", function () {
       if (peerId && !joined) {
         joined = true;
         joinButton.style.display = "none";
-        setTimeout(() => {
-          socket.emit('join-room', ROOM_ID, peerId);
-        }, 1000);
+        disconnectButton.style.display = "block";
+        socket.emit('join-room', ROOM_ID, peerId);
       }
+    })
+  }
+  if (disconnectButton) {
+    disconnectButton.addEventListener("click", function () {
+      socket.emit('disconnect-room', ROOM_ID, peerId);
     })
   }
 })
