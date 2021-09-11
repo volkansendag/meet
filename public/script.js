@@ -1,7 +1,7 @@
 const socket = io('/')
 const videoGrid = document.getElementById('video-grid')
 const myPeer = new Peer(undefined, {
-  host: 'meet2.volkansendag.com',
+  host: 'meet.volkansendag.com',
   port:"443",
   path: '/pr'
 })
