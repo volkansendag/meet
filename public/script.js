@@ -11,13 +11,18 @@ myVideo.muted = true
 const peers = {}
 
 var peerId;
+var opened = false;
 
 navigator.mediaDevices.getUserMedia({
   video: true,
   audio: true
 }).then(stream => {
   addVideoStream(myVideo, stream).then(function () {
-    socket.emit('join-room', ROOM_ID, peerId);
+
+    if (myPeer.disconnected) {
+      socket.emit('join-room', ROOM_ID, peerId);
+    }
+
     myPeer.on('call', call => {
       call.answer(stream)
       const video = document.createElement('video')
@@ -42,7 +47,7 @@ socket.on('user-disconnected', userId => {
 
 myPeer.on('open', id => {
   peerId = id;
-  // socket.emit('join-room', ROOM_ID, peerId);
+  socket.emit('join-room', ROOM_ID, peerId);
   console.log(id);
 })
 
