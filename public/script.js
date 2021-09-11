@@ -1,6 +1,10 @@
 const socket = io('/')
 const videoGrid = document.getElementById('video-grid')
-var myPeer;
+const myPeer = new Peer(undefined, {
+  host: 'meet.volkansendag.com',
+  port: "443",
+  path: '/pr'
+})
 
 const myVideo = document.createElement('video')
 myVideo.muted = true
@@ -12,59 +16,39 @@ var opened = false;
 
 var videoList = [];
 
-function startVideoStream() {
-  return new Promise(function (resolve) {
-    navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true
-    }).then(stream => {
+navigator.mediaDevices.getUserMedia({
+  video: true,
+  audio: true
+}).then(stream => {
+  addVideoStream(myVideo, stream, myPeer.id).then(function () {
 
-      myPeer = new Peer(undefined, {
-        host: 'meet.volkansendag.com',
-        port: "443",
-        path: '/pr'
-      });
+    myPeer.on('call', call => {
+      call.answer(stream)
+      if (peers[call.peer] == undefined) {
+        const video = document.createElement('video');
 
-      addVideoStream(myVideo, stream, myPeer.id).then(function () {
+        peers[call.peer] = call;
 
-        resolve(myPeer);
-
-        myPeer.on('open', id => {
-          peerId = id;
+        call.on('stream', userVideoStream => {
+          addVideoStream(video, userVideoStream, call.peer)
         })
-
-        myPeer.on('call', call => {
-          call.answer(stream)
-          if (peers[call.peer] == undefined) {
-            const video = document.createElement('video');
-
-            peers[call.peer] = call;
-
-            call.on('stream', userVideoStream => {
-              addVideoStream(video, userVideoStream, call.peer)
-            })
-          }
-        })
-
-        socket.on('user-connected', userId => {
-          connectToNewUser(userId, stream)
-        })
-
-      })
+      }
     })
-  })
 
-}
+    socket.on('user-connected', userId => {
+      connectToNewUser(userId, stream)
+    })
+
+  })
+})
 
 window.addEventListener("load", function (v) {
-  startVideoStream();
   var joinButton = document.getElementById("join");
   var disconnectButton = document.getElementById("disconnect");
   if (joinButton) {
     joinButton.addEventListener("click", function () {
       if (peerId && !joined) {
         joined = true;
-
         joinButton.style.display = "none";
         disconnectButton.style.display = "block";
         socket.emit('join-room', ROOM_ID, peerId);
@@ -74,13 +58,11 @@ window.addEventListener("load", function (v) {
   if (disconnectButton) {
     disconnectButton.addEventListener("click", function () {
       if (peerId && joined) {
-        startVideoStream().then(function () {
-          joined = false;
-          joinButton.style.display = "block";
-          disconnectButton.style.display = "none";
-          socket.emit('disconnect-room', ROOM_ID, peerId);
-          removeAllVideos();
-        });
+        joined = false;
+        joinButton.style.display = "block";
+        disconnectButton.style.display = "none";
+        socket.emit('disconnect-room', ROOM_ID, peerId);
+        removeAllVideos();
       }
     })
   }
@@ -93,6 +75,9 @@ socket.on('user-disconnected', userId => {
   removeVideo(userId);
 })
 
+myPeer.on('open', id => {
+  peerId = id;
+})
 
 function connectToNewUser(userId, stream) {
   if (peers[userId] == undefined) {
@@ -143,4 +128,5 @@ function addVideo(id, video) {
     });
     // removeVideo(id);
   }
+
 }
