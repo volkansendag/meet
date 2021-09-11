@@ -66,8 +66,8 @@ function connectToNewUser(userId, stream) {
   const call = myPeer.call(userId, stream)
   const video = document.createElement('video')
   call.on('stream', userVideoStream => {
-    if (!peerIdList.some(p => p == peerId)) {
-      peerIdList.push(peerId);
+    if (!peerIdList.some(p => p == userId)) {
+      peerIdList.push(userId);
     }
     addVideoStream(video, userVideoStream)
   })
