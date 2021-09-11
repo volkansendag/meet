@@ -59,7 +59,10 @@ window.addEventListener("load", function (v) {
 
 socket.on('user-disconnected', userId => {
   if (peers[userId]) {
-    peers[userId].close()
+    peers[userId].close();
+    if (peers[userId].video) {
+      peers[userId].video.remove();
+    }
   }
 })
 
@@ -69,18 +72,15 @@ myPeer.on('open', id => {
 
 function connectToNewUser(userId, stream) {
   if (peers[userId] == undefined) {
-    const call = myPeer.call(userId, stream)
-    const video = document.createElement('video')
+    peers[userId] = myPeer.call(userId, stream)
+    peers[userId].video = document.createElement('video')
 
-    call.on('stream', userVideoStream => {
+    peers[userId].on('stream', userVideoStream => {
       addVideoStream(video, userVideoStream)
     })
-    call.on('close', () => {
-      video.remove();
+    peers[userId].on('close', () => {
       delete peers[userId];
     })
-
-    peers[userId] = call
   }
 }
 
