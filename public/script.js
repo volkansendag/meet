@@ -111,7 +111,7 @@ function addVideoStream(video, stream, id) {
 }
 
 function removeAllVideos() {
-  videoList.filter(p => p.id != peerId && p.video).forEach(item => item.video.remove());
+  videoList.filter(p => p.id != myPeer.id && p.video).forEach(item => item.video.remove());
 }
 
 function removeVideo(id) {
