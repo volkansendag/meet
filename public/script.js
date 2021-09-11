@@ -99,10 +99,7 @@ function addVideoStream(video, stream, id) {
     video.srcObject = stream
     videoGrid.append(video);
 
-    videoList.push({
-      id: id,
-      video: video
-    });
+    addVideo(id, video);
 
     video.addEventListener('loadedmetadata', () => {
       video.play();
@@ -117,4 +114,14 @@ function removeAllVideos() {
 
 function removeVideo(id) {
   videoList.filter(p => p.id == id && p.video).forEach(item => item.video.remove());
+}
+
+function addVideo(id, video) {
+  if (videoList.some(p => p.id == id)) {
+    removeVideo(id);
+  }
+  videoList.push({
+    id: id,
+    video: video
+  });
 }
