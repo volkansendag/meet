@@ -1,10 +1,6 @@
 const socket = io('/')
 const videoGrid = document.getElementById('video-grid')
-const myPeer = new Peer(undefined, {
-  host: 'meet.volkansendag.com',
-  port: "443",
-  path: '/pr'
-})
+var myPeer;
 
 const myVideo = document.createElement('video')
 myVideo.muted = true
@@ -22,6 +18,15 @@ function startVideoStream() {
     audio: true
   }).then(stream => {
     addVideoStream(myVideo, stream, myPeer.id).then(function () {
+      new Peer(undefined, {
+        host: 'meet.volkansendag.com',
+        port: "443",
+        path: '/pr'
+      });
+
+      myPeer.on('open', id => {
+        peerId = id;
+      })
 
       myPeer.on('call', call => {
         call.answer(stream)
@@ -66,7 +71,6 @@ window.addEventListener("load", function (v) {
         disconnectButton.style.display = "none";
         socket.emit('disconnect-room', ROOM_ID, peerId);
         removeAllVideos();
-        startVideoStream();
       }
     })
   }
@@ -79,9 +83,6 @@ socket.on('user-disconnected', userId => {
   removeVideo(userId);
 })
 
-myPeer.on('open', id => {
-  peerId = id;
-})
 
 function connectToNewUser(userId, stream) {
   if (peers[userId] == undefined) {
