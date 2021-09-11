@@ -24,6 +24,7 @@ navigator.mediaDevices.getUserMedia({
   })
 
   socket.on('user-connected', userId => {
+    console.log(userId);
     connectToNewUser(userId, stream)
   })
 })
@@ -33,7 +34,8 @@ socket.on('user-disconnected', userId => {
 })
 
 myPeer.on('open', id => {
-  socket.emit('join-room', ROOM_ID, id)
+  socket.emit('join-room', ROOM_ID, id);
+  console.log(ROOM_ID, id);
 })
 
 function connectToNewUser(userId, stream) {
@@ -51,8 +53,8 @@ function connectToNewUser(userId, stream) {
 
 function addVideoStream(video, stream) {
   video.srcObject = stream
-  video.addEventListener('loadedmetadata', () => {
-    video.play()
-  })
   videoGrid.append(video)
+  video.addEventListener('loadedmetadata', () => {
+    video.play();
+  })
 }
