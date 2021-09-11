@@ -17,12 +17,14 @@ function startVideoStream() {
     video: true,
     audio: true
   }).then(stream => {
+    myPeer = new Peer(undefined, {
+      host: 'meet.volkansendag.com',
+      port: "443",
+      path: '/pr'
+    });
+
     addVideoStream(myVideo, stream, myPeer.id).then(function () {
-      new Peer(undefined, {
-        host: 'meet.volkansendag.com',
-        port: "443",
-        path: '/pr'
-      });
+
 
       myPeer.on('open', id => {
         peerId = id;
