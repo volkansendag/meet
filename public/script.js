@@ -19,7 +19,7 @@ navigator.mediaDevices.getUserMedia({
 }).then(stream => {
   addVideoStream(myVideo, stream).then(function () {
 
-    if (myPeer.disconnected) {
+    if (peerId) {
       socket.emit('join-room', ROOM_ID, peerId);
     }
 
