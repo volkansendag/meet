@@ -21,10 +21,6 @@ navigator.mediaDevices.getUserMedia({
 }).then(stream => {
   addVideoStream(myVideo, stream).then(function () {
 
-    if (peerId && !peerIdList.some(p => p == peerId)) {
-      peerIdList.push(peerId);
-    }
-
     if (peerId) {
       socket.emit('join-room', ROOM_ID, peerId);
     }
@@ -32,9 +28,9 @@ navigator.mediaDevices.getUserMedia({
     myPeer.on('call', call => {
       call.answer(stream)
       const video = document.createElement('video');
-      if (call.peer && !peerIdList.some(p => p == call.peer)) {
-        peerIdList.push(call.peer);
-      }
+
+      peers[call.peer] = call;
+
       call.on('stream', userVideoStream => {
         addVideoStream(video, userVideoStream)
       })
@@ -56,27 +52,20 @@ socket.on('user-disconnected', userId => {
 })
 
 myPeer.on('open', id => {
-  peerId = id;
-  socket.emit('join-room', ROOM_ID, peerId);
-
-  if (!peerIdList.some(p => p == peerId)) {
-    peerIdList.push(peerId);
-  }
+  socket.emit('join-room', ROOM_ID, id);
   console.log(id);
 })
 
 function connectToNewUser(userId, stream) {
   const call = myPeer.call(userId, stream)
   const video = document.createElement('video')
-  if (!peerIdList.some(p => p == userId)) {
-    peerIdList.push(userId);
-  }
+
   call.on('stream', userVideoStream => {
     addVideoStream(video, userVideoStream)
   })
   call.on('close', () => {
     video.remove();
-    peerIdList = peerIdList.filter(p => p !== userId)
+    delete peers[userId];
   })
 
   peers[userId] = call
