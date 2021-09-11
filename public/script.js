@@ -57,29 +57,30 @@ function startVideoStream() {
 }
 
 window.addEventListener("load", function (v) {
+  startVideoStream();
   var joinButton = document.getElementById("join");
   var disconnectButton = document.getElementById("disconnect");
   if (joinButton) {
     joinButton.addEventListener("click", function () {
       if (peerId && !joined) {
         joined = true;
-        startVideoStream().then(function () {
-          joinButton.style.display = "none";
-          disconnectButton.style.display = "block";
-          socket.emit('join-room', ROOM_ID, peerId);
 
-        })
+        joinButton.style.display = "none";
+        disconnectButton.style.display = "block";
+        socket.emit('join-room', ROOM_ID, peerId);
       }
     })
   }
   if (disconnectButton) {
     disconnectButton.addEventListener("click", function () {
       if (peerId && joined) {
-        joined = false;
-        joinButton.style.display = "block";
-        disconnectButton.style.display = "none";
-        socket.emit('disconnect-room', ROOM_ID, peerId);
-        removeAllVideos();
+        startVideoStream().then(function () {
+          joined = false;
+          joinButton.style.display = "block";
+          disconnectButton.style.display = "none";
+          socket.emit('disconnect-room', ROOM_ID, peerId);
+          removeAllVideos();
+        });
       }
     })
   }
