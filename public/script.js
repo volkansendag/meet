@@ -13,42 +13,47 @@ var opened = false;
 var videoList = [];
 
 function startVideoStream() {
-  navigator.mediaDevices.getUserMedia({
-    video: true,
-    audio: true
-  }).then(stream => {
-    myPeer = new Peer(undefined, {
-      host: 'meet.volkansendag.com',
-      port: "443",
-      path: '/pr'
-    });
+  return new Promise(function (resolve) {
+    navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true
+    }).then(stream => {
 
-    addVideoStream(myVideo, stream, myPeer.id).then(function () {
+      myPeer = new Peer(undefined, {
+        host: 'meet.volkansendag.com',
+        port: "443",
+        path: '/pr'
+      });
 
+      addVideoStream(myVideo, stream, myPeer.id).then(function () {
 
-      myPeer.on('open', id => {
-        peerId = id;
+        resolve(myPeer);
+
+        myPeer.on('open', id => {
+          peerId = id;
+        })
+
+        myPeer.on('call', call => {
+          call.answer(stream)
+          if (peers[call.peer] == undefined) {
+            const video = document.createElement('video');
+
+            peers[call.peer] = call;
+
+            call.on('stream', userVideoStream => {
+              addVideoStream(video, userVideoStream, call.peer)
+            })
+          }
+        })
+
+        socket.on('user-connected', userId => {
+          connectToNewUser(userId, stream)
+        })
+
       })
-
-      myPeer.on('call', call => {
-        call.answer(stream)
-        if (peers[call.peer] == undefined) {
-          const video = document.createElement('video');
-
-          peers[call.peer] = call;
-
-          call.on('stream', userVideoStream => {
-            addVideoStream(video, userVideoStream, call.peer)
-          })
-        }
-      })
-
-      socket.on('user-connected', userId => {
-        connectToNewUser(userId, stream)
-      })
-
     })
   })
+
 }
 
 window.addEventListener("load", function (v) {
@@ -59,9 +64,12 @@ window.addEventListener("load", function (v) {
     joinButton.addEventListener("click", function () {
       if (peerId && !joined) {
         joined = true;
-        joinButton.style.display = "none";
-        disconnectButton.style.display = "block";
-        socket.emit('join-room', ROOM_ID, peerId);
+        startVideoStream().then(function () {
+          joinButton.style.display = "none";
+          disconnectButton.style.display = "block";
+          socket.emit('join-room', ROOM_ID, peerId);
+
+        })
       }
     })
   }
