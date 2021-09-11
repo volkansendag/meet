@@ -114,6 +114,7 @@ function removeAllVideos() {
 
 function removeVideo(id) {
   videoList.filter(p => p.id == id && p.video).forEach(item => item.video.remove());
+  videoList = videoList.filter(p => p.id != id);
 }
 
 function addVideo(id, video) {
