@@ -21,6 +21,10 @@ navigator.mediaDevices.getUserMedia({
 }).then(stream => {
   addVideoStream(myVideo, stream).then(function () {
 
+    if (!peerIdList.some(p => p == peerId)) {
+      peerIdList.push(peerId);
+    }
+
     if (peerId) {
       socket.emit('join-room', ROOM_ID, peerId);
     }
@@ -51,7 +55,9 @@ socket.on('user-disconnected', userId => {
 myPeer.on('open', id => {
   peerId = id;
   socket.emit('join-room', ROOM_ID, peerId);
-  peerIdList.push(peerId);
+  if (!peerIdList.some(p => p == peerId)) {
+    peerIdList.push(peerId);
+  }
   console.log(id);
 })
 
