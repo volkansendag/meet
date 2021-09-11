@@ -21,7 +21,7 @@ navigator.mediaDevices.getUserMedia({
 }).then(stream => {
   addVideoStream(myVideo, stream).then(function () {
 
-    if (!peerIdList.some(p => p == peerId)) {
+    if (peerId && !peerIdList.some(p => p == peerId)) {
       peerIdList.push(peerId);
     }
 
@@ -55,6 +55,7 @@ socket.on('user-disconnected', userId => {
 myPeer.on('open', id => {
   peerId = id;
   socket.emit('join-room', ROOM_ID, peerId);
+
   if (!peerIdList.some(p => p == peerId)) {
     peerIdList.push(peerId);
   }
@@ -65,7 +66,9 @@ function connectToNewUser(userId, stream) {
   const call = myPeer.call(userId, stream)
   const video = document.createElement('video')
   call.on('stream', userVideoStream => {
-    peerIdList.push(userId);
+    if (!peerIdList.some(p => p == peerId)) {
+      peerIdList.push(peerId);
+    }
     addVideoStream(video, userVideoStream)
   })
   call.on('close', () => {
