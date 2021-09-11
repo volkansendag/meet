@@ -35,7 +35,7 @@ navigator.mediaDevices.getUserMedia({
 
     socket.on('user-connected', userId => {
       console.log(userId);
-      if (peerIdList.some(id => userId == id)) {
+      if (!peerIdList.some(id => userId == id)) {
         peerIdList.push(userId);
         connectToNewUser(userId, stream)
       }
