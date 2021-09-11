@@ -20,7 +20,7 @@ navigator.mediaDevices.getUserMedia({
   video: true,
   audio: true
 }).then(stream => {
-  addVideoStream(myVideo, stream, myVideo.id).then(function () {
+  addVideoStream(myVideo, stream, myPeer.id).then(function () {
 
     myPeer.on('call', call => {
       call.answer(stream)
@@ -98,6 +98,7 @@ function addVideoStream(video, stream, id) {
   return new Promise(function (resolve, reject) {
     video.srcObject = stream
     videoGrid.append(video);
+
     videoList.push({
       id: id,
       video: video
