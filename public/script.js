@@ -16,33 +16,36 @@ var opened = false;
 
 var videoList = [];
 
-navigator.mediaDevices.getUserMedia({
-  video: true,
-  audio: true
-}).then(stream => {
-  addVideoStream(myVideo, stream, myPeer.id).then(function () {
+function startVideoStream() {
+  navigator.mediaDevices.getUserMedia({
+    video: true,
+    audio: true
+  }).then(stream => {
+    addVideoStream(myVideo, stream, myPeer.id).then(function () {
 
-    myPeer.on('call', call => {
-      call.answer(stream)
-      if (peers[call.peer] == undefined) {
-        const video = document.createElement('video');
+      myPeer.on('call', call => {
+        call.answer(stream)
+        if (peers[call.peer] == undefined) {
+          const video = document.createElement('video');
 
-        peers[call.peer] = call;
+          peers[call.peer] = call;
 
-        call.on('stream', userVideoStream => {
-          addVideoStream(video, userVideoStream, call.peer)
-        })
-      }
+          call.on('stream', userVideoStream => {
+            addVideoStream(video, userVideoStream, call.peer)
+          })
+        }
+      })
+
+      socket.on('user-connected', userId => {
+        connectToNewUser(userId, stream)
+      })
+
     })
-
-    socket.on('user-connected', userId => {
-      connectToNewUser(userId, stream)
-    })
-
   })
-})
+}
 
 window.addEventListener("load", function (v) {
+  startVideoStream();
   var joinButton = document.getElementById("join");
   var disconnectButton = document.getElementById("disconnect");
   if (joinButton) {
@@ -63,6 +66,7 @@ window.addEventListener("load", function (v) {
         disconnectButton.style.display = "none";
         socket.emit('disconnect-room', ROOM_ID, peerId);
         removeAllVideos();
+        startVideoStream();
       }
     })
   }
@@ -128,5 +132,4 @@ function addVideo(id, video) {
     });
     // removeVideo(id);
   }
-
 }
