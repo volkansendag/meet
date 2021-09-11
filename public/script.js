@@ -13,6 +13,8 @@ const peers = {}
 var peerId;
 var opened = false;
 
+var peerIdList = [];
+
 navigator.mediaDevices.getUserMedia({
   video: true,
   audio: true
@@ -33,7 +35,10 @@ navigator.mediaDevices.getUserMedia({
 
     socket.on('user-connected', userId => {
       console.log(userId);
-      connectToNewUser(userId, stream)
+      if (peerIdList.some(id => userId == id)) {
+        peerIdList.push(userId);
+        connectToNewUser(userId, stream)
+      }
     })
 
   })
