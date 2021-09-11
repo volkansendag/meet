@@ -57,7 +57,6 @@ function startVideoStream() {
 }
 
 window.addEventListener("load", function (v) {
-  startVideoStream();
   var joinButton = document.getElementById("join");
   var disconnectButton = document.getElementById("disconnect");
   if (joinButton) {
