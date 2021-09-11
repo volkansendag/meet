@@ -103,7 +103,5 @@ function addVideoStream(video, stream, id) {
 }
 
 function removeVideo(id) {
-  if (videoList.some(p => p.id == id)) {
-    videoList.filter(p => p.id == id).forEach(item => item.video && item.video.remove());
-  }
+  videoList.filter(p => p.id == id && p.video).forEach(item => item.video.remove());
 }
