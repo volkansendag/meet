@@ -65,10 +65,10 @@ myPeer.on('open', id => {
 function connectToNewUser(userId, stream) {
   const call = myPeer.call(userId, stream)
   const video = document.createElement('video')
+  if (!peerIdList.some(p => p == userId)) {
+    peerIdList.push(userId);
+  }
   call.on('stream', userVideoStream => {
-    if (!peerIdList.some(p => p == userId)) {
-      peerIdList.push(userId);
-    }
     addVideoStream(video, userVideoStream)
   })
   call.on('close', () => {
