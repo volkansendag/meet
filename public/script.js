@@ -117,11 +117,12 @@ function removeVideo(id) {
 }
 
 function addVideo(id, video) {
-  if (videoList.some(p => p.id == id)) {
-    removeVideo(id);
+  if (!videoList.some(p => p.id == id)) {
+    videoList.push({
+      id: id,
+      video: video
+    });
+    // removeVideo(id);
   }
-  videoList.push({
-    id: id,
-    video: video
-  });
+
 }
