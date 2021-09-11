@@ -27,13 +27,15 @@ navigator.mediaDevices.getUserMedia({
 
     myPeer.on('call', call => {
       call.answer(stream)
-      const video = document.createElement('video');
+      if (peers[call.peer] == undefined) {
+        const video = document.createElement('video');
 
-      peers[call.peer] = call;
+        peers[call.peer] = call;
 
-      call.on('stream', userVideoStream => {
-        addVideoStream(video, userVideoStream)
-      })
+        call.on('stream', userVideoStream => {
+          addVideoStream(video, userVideoStream)
+        })
+      }
     })
 
     socket.on('user-connected', userId => {
@@ -41,8 +43,6 @@ navigator.mediaDevices.getUserMedia({
     })
 
   })
-
-
 })
 
 socket.on('user-disconnected', userId => {
@@ -57,18 +57,20 @@ myPeer.on('open', id => {
 })
 
 function connectToNewUser(userId, stream) {
-  const call = myPeer.call(userId, stream)
-  const video = document.createElement('video')
+  if (peers[userId] == undefined) {
+    const call = myPeer.call(userId, stream)
+    const video = document.createElement('video')
 
-  call.on('stream', userVideoStream => {
-    addVideoStream(video, userVideoStream)
-  })
-  call.on('close', () => {
-    video.remove();
-    delete peers[userId];
-  })
+    call.on('stream', userVideoStream => {
+      addVideoStream(video, userVideoStream)
+    })
+    call.on('close', () => {
+      video.remove();
+      delete peers[userId];
+    })
 
-  peers[userId] = call
+    peers[userId] = call
+  }
 }
 
 function addVideoStream(video, stream) {
