@@ -57,7 +57,10 @@ window.addEventListener("load", function (v) {
   }
   if (disconnectButton) {
     disconnectButton.addEventListener("click", function () {
+      joinButton.style.display = "block";
+      disconnectButton.style.display = "none";
       socket.emit('disconnect-room', ROOM_ID, peerId);
+      removeAllVideos();
     })
   }
 })
@@ -105,6 +108,10 @@ function addVideoStream(video, stream, id) {
       resolve(video);
     })
   });
+}
+
+function removeAllVideos() {
+  videoList.filter(p => p.id != peerId && p.video).forEach(item => item.video.remove());
 }
 
 function removeVideo(id) {
