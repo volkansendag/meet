@@ -14,13 +14,13 @@ var joined = false;
 var peerId;
 var opened = false;
 
-var peerIdList = [];
+var videoList = [];
 
 navigator.mediaDevices.getUserMedia({
   video: true,
   audio: true
 }).then(stream => {
-  addVideoStream(myVideo, stream).then(function () {
+  addVideoStream(myVideo, stream, myVideo.id).then(function () {
 
     myPeer.on('call', call => {
       call.answer(stream)
@@ -30,7 +30,7 @@ navigator.mediaDevices.getUserMedia({
         peers[call.peer] = call;
 
         call.on('stream', userVideoStream => {
-          addVideoStream(video, userVideoStream)
+          addVideoStream(video, userVideoStream, call.peer)
         })
       }
     })
@@ -59,11 +59,9 @@ window.addEventListener("load", function (v) {
 
 socket.on('user-disconnected', userId => {
   if (peers[userId]) {
-    peers[userId].close();
-    if (peers[userId].video) {
-      peers[userId].video.remove();
-    }
+    peers[userId].close()
   }
+  removeVideo(userId);
 })
 
 myPeer.on('open', id => {
@@ -72,25 +70,40 @@ myPeer.on('open', id => {
 
 function connectToNewUser(userId, stream) {
   if (peers[userId] == undefined) {
-    peers[userId] = myPeer.call(userId, stream)
-    peers[userId].video = document.createElement('video')
 
-    peers[userId].on('stream', userVideoStream => {
-      addVideoStream(peers[userId].video, userVideoStream)
+    const call = myPeer.call(userId, stream)
+    const video = document.createElement('video')
+
+    call.on('stream', userVideoStream => {
+      addVideoStream(video, userVideoStream, userId)
     })
-    peers[userId].on('close', () => {
+    call.on('close', () => {
+      video.remove();
       delete peers[userId];
     })
+
+    peers[userId] = call
   }
 }
 
-function addVideoStream(video, stream) {
+function addVideoStream(video, stream, id) {
   return new Promise(function (resolve, reject) {
     video.srcObject = stream
     videoGrid.append(video);
+    videoList.push({
+      id: id,
+      video: video
+    });
+
     video.addEventListener('loadedmetadata', () => {
       video.play();
       resolve(video);
     })
   });
+}
+
+function removeVideo(id) {
+  if (videoList.some(p => p.id == id)) {
+    videoList.filter(p => p.id == id).video.remove();
+  }
 }
