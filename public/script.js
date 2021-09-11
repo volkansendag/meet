@@ -2,7 +2,7 @@ const socket = io('/')
 const videoGrid = document.getElementById('video-grid')
 const myPeer = new Peer(undefined, {
   host: 'meet.volkansendag.com',
-  port:"443",
+  port: "443",
   path: '/pr'
 })
 
@@ -13,20 +13,22 @@ navigator.mediaDevices.getUserMedia({
   video: true,
   audio: true
 }).then(stream => {
-  addVideoStream(myVideo, stream)
+  addVideoStream(myVideo, stream).then(function () {
+    myPeer.on('call', call => {
+      call.answer(stream)
+      const video = document.createElement('video')
+      call.on('stream', userVideoStream => {
+        addVideoStream(video, userVideoStream)
+      })
+    })
 
-  myPeer.on('call', call => {
-    call.answer(stream)
-    const video = document.createElement('video')
-    call.on('stream', userVideoStream => {
-      addVideoStream(video, userVideoStream)
+    socket.on('user-connected', userId => {
+      console.log(userId);
+      connectToNewUser(userId, stream)
     })
   })
 
-  socket.on('user-connected', userId => {
-    console.log(userId);
-    connectToNewUser(userId, stream)
-  })
+
 })
 
 socket.on('user-disconnected', userId => {
@@ -52,10 +54,13 @@ function connectToNewUser(userId, stream) {
 }
 
 function addVideoStream(video, stream) {
-  video.srcObject = stream
-  videoGrid.append(video);
-  video.addEventListener('loadedmetadata', () => {
-    video.play();
-    console.log(videoGrid);
-  })
+  return new Promise(function (resolve, reject) {
+    video.srcObject = stream
+    videoGrid.append(video);
+    video.addEventListener('loadedmetadata', () => {
+      video.play();
+      console.log(videoGrid);
+      resolve(video);
+    })
+  });
 }
