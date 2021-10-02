@@ -6,7 +6,7 @@ const audioOutputSelect = document.querySelector('select#audioOutput');
 const videoSelect = document.querySelector('select#videoSource');
 const selectors = [audioInputSelect, audioOutputSelect, videoSelect];
 const myVideo = document.createElement('video')
-
+var myStream;
 // const myPeer = new Peer(undefined, {
 //   host: 'meet.volkansendag.com',
 //   port: "443",
@@ -82,7 +82,6 @@ function connectToNewUser(userId, stream) {
 
 function addVideoStream(video, stream, id) {
   return new Promise(function (resolve, reject) {
-    window.stream = stream;
     video.srcObject = stream
     videoGrid.append(video);
 
@@ -91,7 +90,11 @@ function addVideoStream(video, stream, id) {
 
     video.addEventListener('loadedmetadata', () => {
       video.play();
-      resolve(video);
+      var res = {
+        video: video,
+        stream: stream
+      };
+      resolve(res);
     })
   });
 }
@@ -220,8 +223,8 @@ function getDeviceList(deviceInfos) {
 
 function startVideo(stream) {
 
-  addVideoStream(myVideo, stream, myPeer.id).then(function () {
-
+  addVideoStream(myVideo, stream, myPeer.id).then(function (data) {
+    myStream = data.stream;
     myPeer.on('call', call => {
       call.answer(stream)
       if (peers[call.peer] == undefined) {
@@ -244,11 +247,11 @@ function startVideo(stream) {
 }
 
 function startMedia(params) {  
-  if (window.stream) {
-      window.stream.getTracks().forEach(track => {
+  if (myStream) {
+    myStream.getTracks().forEach(track => {
         track.stop();
       });
-      stream = window.stream;
+      stream = myStream;
   }
 
   var audioSource = audioInputSelect.value;
