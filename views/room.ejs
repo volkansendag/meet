@@ -11,6 +11,15 @@
   <script src="/socket.io/socket.io.js" defer></script>
   <title>Meet - CuteDev</title>
   <style>
+    .pids-wrapper{
+     width: 100%;
+    }
+    .pid{
+      width: 8px;
+      height: 10px;
+      display: inline-block;
+      margin: 5px;
+    }
     #video-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, 300px);
@@ -27,6 +36,37 @@
 <body>
   <div id="video-grid"></div>
   <button id="join">Join</button>
+
+  <div id="container">
+
+    <div class="select">
+        <label for="audioSource">Audio input source: </label><select id="audioSource"></select>
+    </div>
+
+    <div class="pids-wrapper">
+      <div class="pid"></div>
+      <div class="pid"></div>
+      <div class="pid"></div>
+      <div class="pid"></div>
+      <div class="pid"></div>
+      <div class="pid"></div>
+      <div class="pid"></div>
+      <div class="pid"></div>
+      <div class="pid"></div>
+      <div class="pid"></div>
+    </div>
+    
+    <div class="select">
+        <label for="audioOutput">Audio output destination: </label><select id="audioOutput"></select>
+    </div>
+
+    <div class="select">
+        <label for="videoSource">Video source: </label><select id="videoSource"></select>
+    </div>
+
+    <video id="video" playsinline autoplay></video>
+
+  </div>
   <button id="disconnect" style="display: none;">Disconnect</button>
   
   <script src="script.js" defer></script>
