@@ -1,13 +1,11 @@
 const socket = io("/");
 const videoGrid = document.getElementById("video-grid");
-const screenGrid = document.getElementById("screen-grid");
 const videoElement = document.querySelector("video");
 const audioInputSelect = document.querySelector("select#audioSource");
 const audioOutputSelect = document.querySelector("select#audioOutput");
 const videoSelect = document.querySelector("select#videoSource");
 const selectors = [audioInputSelect, audioOutputSelect, videoSelect];
 const myVideo = document.createElement("video");
-const myScreen = document.createElement("video");
 
 var myStream;
 // const myPeer = new Peer(undefined, {
@@ -32,17 +30,20 @@ window.addEventListener("load", function (v) {
   var settings = document.getElementById("settingsContainer");
   var camOnButton = document.getElementById("camOn");
   var micOnButton = document.getElementById("micOn");
+  var micOnIcon = document.querySelector("#micOn > i");
   var captureButton = document.getElementById("startCapture");
   var stopCaptureButton = document.getElementById("stopCapture");
-
   var disconnectButton = document.getElementById("disconnect");
+
   if (joinButton) {
     joinButton.addEventListener("click", function () {
       if (peerId && !joined) {
         joined = true;
         joinButton.style.display = "none";
         settings.style.display = "none";
+
         disconnectButton.style.display = "block";
+
         socket.emit("join-room", ROOM_ID, peerId);
       }
     });
@@ -55,6 +56,7 @@ window.addEventListener("load", function (v) {
         settings.style.display = "block";
 
         disconnectButton.style.display = "none";
+
         socket.emit("disconnect-room", ROOM_ID, peerId);
         removeAllVideos();
       }
@@ -63,6 +65,12 @@ window.addEventListener("load", function (v) {
   if (camOnButton) {
     camOnButton.addEventListener("click", function () {
       if (peerId) {
+        var className = camOnButton.className;
+        if (className.indexOf("success") > 0) {
+          camOnButton.className = "btn btn-danger";
+        } else {
+          camOnButton.className = "btn btn-success";
+        }
         setTracksEnabledStatus("video");
       }
     });
@@ -70,6 +78,13 @@ window.addEventListener("load", function (v) {
   if (micOnButton) {
     micOnButton.addEventListener("click", function () {
       if (peerId) {
+        var className = micOnIcon.className;
+
+        if (className.indexOf("slash") > 0) {
+          micOnIcon.className = "fa fa-microphone -o fa-lg";
+        } else {
+          micOnIcon.className = "fa fa-microphone-slash -o fa-lg";
+        }
         setTracksEnabledStatus("audio");
       }
     });
@@ -88,6 +103,7 @@ window.addEventListener("load", function (v) {
       if (peerId) {
         stopCapture();
         stopCaptureButton.style.display = "none";
+
         captureButton.style.display = "block";
       }
     });
@@ -335,25 +351,24 @@ function startMedia(params) {
 async function startCapture(stream) {
   //addCapture(myScreen, stream, myPeer.id);
 
-  myScreen.srcObject = await navigator.mediaDevices.getDisplayMedia({
+  myVideo.srcObject = await navigator.mediaDevices.getDisplayMedia({
     video: {
       cursor: "always",
     },
     audio: false,
   });
 
-  screenGrid.append(myScreen);
-
-  myScreen.addEventListener("loadedmetadata", () => {
-    myScreen.play();
+  myVideo.addEventListener("loadedmetadata", () => {
+    // myScreen.play();
   });
 }
 
 function stopCapture() {
-  let tracks = myScreen.srcObject.getTracks();
+  let tracks = myVideo.srcObject.getTracks();
 
   tracks.forEach((track) => track.stop());
-  myScreen.srcObject = null;
+  myVideo.srcObject = null;
+  startMedia();
 }
 
 function startDisplayScreen() {
