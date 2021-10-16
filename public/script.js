@@ -6,6 +6,7 @@ const audioOutputSelect = document.querySelector("select#audioOutput");
 const videoSelect = document.querySelector("select#videoSource");
 const selectors = [audioInputSelect, audioOutputSelect, videoSelect];
 const myVideo = document.createElement("video");
+const messagesDiv = document.getElementById("messages");
 
 var myStream;
 // const myPeer = new Peer(undefined, {
@@ -18,6 +19,7 @@ const myPeer = new Peer();
 
 myVideo.muted = true;
 const peers = {};
+var peersUserIds = [];
 var joined = false;
 
 var peerId;
@@ -34,6 +36,8 @@ window.addEventListener("load", function (v) {
   var captureButton = document.getElementById("startCapture");
   var stopCaptureButton = document.getElementById("stopCapture");
   var disconnectButton = document.getElementById("disconnect");
+  var inputMessage = document.getElementById("inputMessage");
+  var sendMessageButton = document.getElementById("sendMessage");
 
   if (joinButton) {
     joinButton.addEventListener("click", function () {
@@ -108,6 +112,13 @@ window.addEventListener("load", function (v) {
       }
     });
   }
+  if (sendMessageButton) {
+    sendMessageButton.addEventListener("click", function () {
+      if (peerId) {
+        sendMessage();
+      }
+    });
+  }
 });
 
 socket.on("user-disconnected", (userId) => {
@@ -125,13 +136,14 @@ function connectToNewUser(userId, stream) {
   if (peers[userId] == undefined) {
     const call = myPeer.call(userId, stream);
     const video = document.createElement("video");
-
+    peersUserIds.push(userId);
     call.on("stream", (userVideoStream) => {
       addVideoStream(video, userVideoStream, userId);
     });
     call.on("close", () => {
       video.remove();
       delete peers[userId];
+      delete peersUserIds[userId];
     });
 
     peers[userId] = call;
@@ -322,6 +334,10 @@ function startVideo(stream) {
     socket.on("user-connected", (userId) => {
       connectToNewUser(userId, stream);
     });
+
+    socket.on("new message", (data) => {
+      addMessageToChat(data);
+    });
   });
 
   return navigator.mediaDevices.enumerateDevices();
@@ -348,6 +364,12 @@ function startMedia(params) {
     .then(setDeviceList);
 }
 
+function getMyVideoTrack(params) {
+  var myTracks = getStreamTrackList();
+
+  return myTracks.find((tr) => tr.kind == "video");
+}
+
 async function startCapture(stream) {
   //addCapture(myScreen, stream, myPeer.id);
 
@@ -359,8 +381,23 @@ async function startCapture(stream) {
   });
 
   myVideo.addEventListener("loadedmetadata", () => {
-    // myScreen.play();
+    //replacePeersStream();
   });
+}
+
+function replacePeersStream() {
+  if (peersUserIds && peersUserIds.length > 0) {
+    var myVideoTrack = getMyVideoTrack();
+
+    peersUserIds.forEach(function (id) {
+      var peer = myPeer.connections[id][0];
+      var peerConn = peer.peerConnection;
+      var peerSenders = peerConn.getSenders();
+      peerSenders
+        .find((tr) => tr.track.kind == "video")
+        .replaceTrack(myVideoTrack);
+    });
+  }
 }
 
 function stopCapture() {
@@ -380,6 +417,25 @@ function startDisplayScreen() {
       audio: false,
     })
     .then(startCapture);
+}
+
+function sendMessage() {
+  var data = $(inputMessage).val();
+  addMessageToChat({ userId: peerId, message: data });
+
+  socket.emit("new message", {
+    room: ROOM_ID,
+    userId: peerId,
+    message: data,
+  });
+}
+
+function addMessageToChat(data) {
+  data = data.userId + ":   " + data.message;
+
+  const $messageBodyDiv = $('<span class="messageBody">').text(data);
+  $(messagesDiv).append($messageBodyDiv);
+  $(messagesDiv).append("<br>");
 }
 
 audioInputSelect.onchange = startMedia;
